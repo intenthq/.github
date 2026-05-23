@@ -101,8 +101,8 @@ If that sounds like you, take a look at Intent HQ and what we are building.
 ## Learn more
 
 - **Website:** https://www.intenthq.com
-- **IntentOne:** https://www.intenthq.com/intentone
-- **Company:** https://www.intenthq.com/about
+- **IntentOne:** https://intent.one
+- **Company:** https://www.intenthq.com/company
 - **LXA x Intent HQ report:** https://intenthq.com/agentic-marketing
 
 ---
