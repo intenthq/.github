@@ -1,0 +1,42 @@
+# Organisation default release-drafter configuration.
+#
+# release-drafter searches for its config in the repository first and then falls
+# back to `intenthq/.github:.github/release-drafter.yml`. Until this file existed
+# that fallback resolved to a 404, so every repository that used the shared
+# `release-drafter` composite action without committing its own config failed
+# with:
+#
+#   Repo load failed. Config file not found with error 404.
+#   (target: intenthq/.github:.github/release-drafter.yml)
+#
+# 17 failed runs across 17 repositories in the 30 days to 2026-10-30.
+#
+# This file mirrors the config the edge-* services already carry, so a repository
+# that relies on the fallback now produces the same draft release notes as one
+# with a local copy. A repository can still override it by committing its own
+# .github/release-drafter.yml.
+
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+version-resolver:
+  major:
+    labels:
+      - 'major'
+  minor:
+    labels:
+      - 'minor'
+  patch:
+    labels:
+      - 'patch'
+  default: patch
+categories:
+  - title: '💥 Breaking Changes'
+    label: 'major'
+  - title: '✨ New features'
+    label: 'minor'
+  - title: '🐛 Bug fixes & Other miscellaneous changes'
+    label: 'patch'
+template: |
+  ## What’s Changed
+
+  $CHANGES
