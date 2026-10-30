@@ -1,0 +1,62 @@
+# Organisation default autolabeler configuration.
+#
+# Repositories that gate merges on a semver label run the shared label-checker
+# after an autolabel job configured like this:
+#
+#   - uses: intenthq/github-actions/.github/actions/release-drafter@v4
+#     with:
+#       disable-releaser: true
+#       config-name: autolabeler.yml
+#
+# release-drafter looks for `autolabeler.yml` in the repository first and then
+# falls back to `intenthq/.github:.github/autolabeler.yml`. Repositories without
+# a local copy therefore had no labelling rules at all.
+#
+# Two defects in the per-repository copies are fixed here:
+#
+#  1. No rule matched Dependabot's default title "Bump <thing> from X to Y", so
+#     every Dependabot pull request stayed unlabelled and the label-checker then
+#     failed it. That is the single largest source of red pull requests in the
+#     estate.
+#  2. The rules overlapped. `feat!:` matches both /^feat/ and the breaking-change
+#     body rule, so it received both `minor` and `major`; `major` + `patch` and
+#     `minor` + `patch` combinations make an "exactly one of major,minor,patch"
+#     check permanently unsatisfiable, so those pull requests could never go
+#     green however they were edited.
+#
+# Every rule below is mutually exclusive with every other rule, so a pull request
+# that matches any of them receives exactly one semver label.
+#
+# `major` is decided by the Conventional Commits `!` marker alone. A breaking
+# change that is recorded only in the commit body must also carry `!` in the pull
+# request title; commitlint already requires that pairing when `!` is the version
+# signal, and a body-only rule cannot avoid overlapping the type rules.
+
+template: "Mandatory field" #https://github.com/release-drafter/release-drafter/blob/master/bin/generate-schema.js#L15
+
+autolabeler:
+  # Breaking change of any declared type: `feat!:`, `fix(scope)!:`, `chore!:`
+  - label: 'major'
+    title:
+      - '/^[a-z]+(\([^)]+\))?!:/i'
+
+  # New feature, without the breaking-change marker (that case is `major` above)
+  - label: 'minor'
+    title:
+      - '/^feat(\([^)]+\))?:/i'
+
+  # Non-breaking conventional types
+  - label: 'patch'
+    title:
+      - '/^(fix|docs|chore|ci|perf|test|refactor|build|style|revert)(\([^)]+\))?:/i'
+
+  # Dependabot: "Bump lodash from 4.17.20 to 4.17.21",
+  # "Bump the npm_and_yarn group across 1 directory with 2 updates"
+  - label: 'patch'
+    title:
+      - '/^bump\b/i'
+
+  # Renovate, when the branch carries a non-conventional title
+  - label: 'patch'
+    title:
+      - '/^update (dev)?dependenc/i'
